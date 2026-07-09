@@ -6,9 +6,9 @@ on:
     tags: ['v*']
   pull_request:
     branches: [main, master]
-  workflow_dispatch:  # 手动触发构建
+  workflow_dispatch:  # 手动触发，仅构建 amd64
   schedule:
-    - cron: '0 2 * * *'  # 每天 UTC 2:00 同步上游 → 自动构建
+    - cron: '0 2 * * *'  # 每天 UTC 2:00 同步上游 → 全平台构建
 
 env:
   REGISTRY: ghcr.io
@@ -29,9 +29,6 @@ jobs:
       - uses: actions/checkout@v4
         with:
           fetch-depth: 0
-          # push 需要 token 有写权限
-          token: ${{ secrets.GITHUB_TOKEN }}
-
       - name: Sync upstream
         id: sync
         run: |
@@ -39,13 +36,12 @@ jobs:
           git fetch upstream main
           if git diff --quiet HEAD upstream/main; then
             echo "SYNC_NEEDED=false" >> $GITHUB_OUTPUT
-            echo "[*] 上游无新变更，跳过同步"
+            echo "无新变更，跳过"
           else
             echo "SYNC_NEEDED=true" >> $GITHUB_OUTPUT
-            echo "[*] 检测到上游新变更，开始同步..."
             git reset --hard upstream/main
             git push origin main
-            echo "[✓] 同步完成"
+            echo "已同步并推送"
           fi
 
   docker-build:
@@ -64,6 +60,7 @@ jobs:
       - uses: actions/checkout@v4
 
       - name: Set up QEMU
+        if: github.event_name == 'schedule'
         uses: docker/setup-qemu-action@v3
 
       - name: Set up Docker Buildx
@@ -88,13 +85,14 @@ jobs:
             type=semver,pattern={{version}}
             type=semver,pattern={{major}}.{{minor}}
             type=sha,format=long
-            type=raw,value=latest,enable=${{ github.ref == format('refs/heads/{0}', 'main') }}
+            type=raw,value=latest,enable=${{ github.ref == format('refs/heads/{0}', 'main') || github.ref == format('refs/heads/{0}', 'master') }}
 
       - name: Build and push Docker image
         uses: docker/build-push-action@v6
         with:
           context: .
-          platforms: linux/amd64,linux/arm64
+          # schedule → 全平台；其他 → 仅当前 runner（amd64）
+          platforms: ${{ github.event_name == 'schedule' && 'linux/amd64,linux/arm64' || 'linux/amd64' }}
           push: ${{ github.event_name != 'pull_request' }}
           tags: ${{ steps.meta.outputs.tags }}
           labels: ${{ steps.meta.outputs.labels }}

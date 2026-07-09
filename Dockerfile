@@ -16,15 +16,14 @@ RUN go build -o usque \
     -X github.com/Diniboy1123/usque/cmd.date=$(date -u +%Y-%m-%dT%H:%M:%SZ)" \
     .
 
-FROM alpine:latest
+FROM alpine:3.21
 RUN apk add --no-cache ca-certificates
-WORKDIR /app
 COPY --from=builder /app/usque /bin/usque
 COPY scripts/docker-entrypoint.sh /entrypoint.sh
 
 ENV USQUE_CONFIG_PATH=/app/config.json \
     USQUE_ACCEPT_TOS=true
 
-EXPOSE 1080 8080 3128
+EXPOSE 31280
 ENTRYPOINT ["/entrypoint.sh"]
 CMD ["socks"]

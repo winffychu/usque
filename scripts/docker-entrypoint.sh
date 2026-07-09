@@ -9,8 +9,7 @@ register_if_needed() {
     if [ ! -d "$config_dir" ]; then
         mkdir -p "$config_dir" 2>/dev/null || true
     fi
-    cmd="/app/usque register --config $USQUE_CONFIG_PATH"
-    cmd="$cmd --locale ${USQUE_LOCALE:-en_US} --model ${USQUE_MODEL:-PC} --name ${USQUE_DEVICE_NAME:-$(hostname)}"
+    cmd="/app/usque register --config $USQUE_CONFIG_PATH --locale ${USQUE_LOCALE:-en_US} --model ${USQUE_MODEL:-PC} --name ${USQUE_DEVICE_NAME:-$(hostname)}"
     [ "${USQUE_ACCEPT_TOS:-true}" = "true" ] && cmd="$cmd --accept-tos"
     [ -n "${USQUE_JWT:-}" ] && cmd="$cmd --jwt $USQUE_JWT"
     eval "$cmd" || { echo "[E] 注册失败"; exit 1; }

@@ -17,11 +17,10 @@ RUN go build -o usque \
     .
 
 FROM alpine:3.21
-RUN apk add --no-cache ca-certificates
-COPY --from=builder /app/usque /bin/usque
+COPY --from=builder /app/usque /app/usque
 COPY scripts/docker-entrypoint.sh /entrypoint.sh
 RUN chmod +x /entrypoint.sh
-
+WORKDIR /app
 ENV USQUE_CONFIG_PATH=/app/config.json \
     USQUE_ACCEPT_TOS=true
 

@@ -9,7 +9,7 @@ register_if_needed() {
     if [ ! -d "$config_dir" ]; then
         mkdir -p "$config_dir" 2>/dev/null || true
     fi
-    cmd="$USQUE_BINARY register --config $USQUE_CONFIG_PATH"
+    cmd="$usque register --config $USQUE_CONFIG_PATH"
     cmd="$cmd --locale ${USQUE_LOCALE:-en_US} --model ${USQUE_MODEL:-PC} --name ${USQUE_DEVICE_NAME:-$(hostname)}"
     [ "${USQUE_ACCEPT_TOS:-true}" = "true" ] && cmd="$cmd --accept-tos"
     [ -n "${USQUE_JWT:-}" ] && cmd="$cmd --jwt $USQUE_JWT"
@@ -24,12 +24,12 @@ main() {
             echo "用法: entrypoint.sh <command> [args]"
             echo "命令: socks|http|tunnel|l4-http|l4-socks|portfw|register"
             exit 0 ;;
-        register)  shift; exec "$USQUE_BINARY" register "$@" ;;
-        version|--version|-v) exec "$USQUE_BINARY" version ;;
+        register)  shift; exec "$usque" register "$@" ;;
+        version|--version|-v) exec "$usque" version ;;
     esac
-    [ -x "$USQUE_BINARY" ] || { echo "[E] 找不到 $USQUE_BINARY"; exit 1; }
+    [ -x "$usque" ] || { echo "[E] 找不到 $usque"; exit 1; }
     register_if_needed
-    exec "$USQUE_BINARY" --config "$USQUE_CONFIG_PATH" "${@:-socks}"
+    exec "$usque" --config "$USQUE_CONFIG_PATH" "${@:-socks}"
 }
 
 main "$@"

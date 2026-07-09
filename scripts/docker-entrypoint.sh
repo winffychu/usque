@@ -5,6 +5,14 @@ set -euo pipefail
 register_if_needed() {
     [ -f "$USQUE_CONFIG_PATH" ] && return 0
     echo "[*] 自动注册中..."
+
+    # 确保配置所在目录存在且可写
+    local config_dir
+    config_dir="$(dirname "$USQUE_CONFIG_PATH")"
+    if [ ! -d "$config_dir" ]; then
+        mkdir -p "$config_dir" 2>/dev/null || true
+    fi
+
     local cmd=("$USQUE_BINARY" register --config "$USQUE_CONFIG_PATH"
         --locale "${USQUE_LOCALE:-en_US}" --model "${USQUE_MODEL:-PC}"
         --name "${USQUE_DEVICE_NAME:-$(hostname)}")

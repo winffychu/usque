@@ -20,7 +20,6 @@ FROM alpine:3.21
 RUN apk add --no-cache ca-certificates
 COPY --from=builder /app/usque /bin/usque
 COPY scripts/docker-entrypoint.sh /entrypoint.sh
-RUN chmod +x /entrypoint.sh
 
 ENV USQUE_CONFIG_PATH=/app/config.json \
     USQUE_ACCEPT_TOS=true

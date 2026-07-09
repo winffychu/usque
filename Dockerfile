@@ -17,6 +17,7 @@ RUN go build -o usque \
     .
 
 FROM alpine:3.21
+RUN apk add --no-cache ca-certificates
 COPY --from=builder /app/usque /app/usque
 COPY scripts/docker-entrypoint.sh /entrypoint.sh
 RUN chmod +x /entrypoint.sh
